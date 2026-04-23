@@ -60,6 +60,14 @@ jobs:
       - name: Test docker compose up
         run: |
           docker compose up -d
-          sleep 10
+          echo "Waiting for backend to start..."
+          for i in {1..30}; do
+            if curl -sf http://localhost:8000/health > /dev/null 2>&1; then
+              echo "Backend is ready"
+              break
+            fi
+            echo "Attempt $i/30..."
+            sleep 2
+          done
           curl -f http://localhost:8000/health || exit 1
           docker compose down
