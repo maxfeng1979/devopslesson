@@ -1,8 +1,8 @@
 from fastapi import APIRouter, HTTPException, status, Depends
 from fastapi.security import HTTPBearer, HTTPAuthorizationCredentials
-from .auth import verify_password, get_password_hash, create_access_token, decode_token
-from .models import UserCreate, UserLogin, Token
-from .database import get_db
+from ..auth import verify_password, get_password_hash, create_access_token, decode_token
+from ..models import UserCreate, UserLogin, Token
+from ..database import get_db
 import aiosqlite
 
 router = APIRouter(prefix="/auth", tags=["auth"])

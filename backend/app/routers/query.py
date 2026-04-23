@@ -1,5 +1,5 @@
 from fastapi import APIRouter, Depends, Query
-from .routers.auth import get_current_user
+from ..routers.auth_routes import get_current_user
 import aiosqlite
 
 router = APIRouter(prefix="/query", tags=["query"])

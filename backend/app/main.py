@@ -1,7 +1,7 @@
 from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
 from .database import init_db
-from .routers.auth import router as auth_router
+from .routers.auth_routes import router as auth_router
 from .routers.form import router as form_router
 from .routers.coupon import router as coupon_router
 from .routers.query import router as query_router

@@ -1,6 +1,6 @@
 from fastapi import APIRouter, Depends, HTTPException
-from .models import CouponGrab
-from .routers.auth import get_current_user
+from ..models import CouponGrab
+from ..routers.auth_routes import get_current_user
 import aiosqlite
 
 router = APIRouter(prefix="/coupons", tags=["coupons"])
