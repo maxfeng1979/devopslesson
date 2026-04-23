@@ -1,13 +1,10 @@
-version: '3.8'
-
 services:
   backend:
     build: ./backend
     ports:
       - "8000:8000"
     volumes:
-      - ./backend:/app
-      - backend-data:/app/db.sqlite3
+      - backend-data:/app
     environment:
       - PYTHONUNBUFFERED=1
 

@@ -61,6 +61,7 @@ jobs:
         run: |
           docker compose up -d
           echo "Waiting for backend to start..."
+          docker compose logs backend
           for i in {1..30}; do
             if curl -sf http://localhost:8000/health > /dev/null 2>&1; then
               echo "Backend is ready"
