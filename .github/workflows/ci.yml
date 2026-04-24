@@ -1,0 +1,93 @@
+name: CI/CD Pipeline
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+    branches: [main]
+
+jobs:
+  test-backend:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: '3.11'
+
+      - name: Install dependencies
+        run: |
+          cd backend
+          pip install -r requirements.txt
+
+      - name: Run unit tests
+        run: |
+          cd backend
+          python -m pytest test/ -v --tb=short
+
+  test-frontend:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Set up Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: '20'
+
+      - name: Install dependencies
+        run: |
+          cd frontend
+          npm install
+
+      - name: Build frontend
+        run: |
+          cd frontend
+          npm run build
+
+  docker-build:
+    runs-on: ubuntu-latest
+    needs: [test-backend, test-frontend]
+    if: github.event_name == 'push'
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Build Docker images
+        run: docker compose build
+
+      - name: Test docker compose up
+        run: |
+          docker compose up -d
+          echo "Waiting for backend to start..."
+          docker compose logs backend
+          for i in {1..30}; do
+            if curl -sf http://localhost:8000/health > /dev/null 2>&1; then
+              echo "Backend is ready"
+              break
+            fi
+            echo "Attempt $i/30..."
+            sleep 2
+          done
+          curl -f http://localhost:8000/health || exit 1
+          docker compose down
+
+      - name: Run integration tests
+        run: |
+          docker compose up -d
+          echo "Waiting for services..."
+          sleep 10
+          cd test
+          pip install requests pytest
+          python -m pytest test_integration_example.py -v --tb=short
+          docker compose down
+
+      - name: Trigger external test workflow
+        run: |
+          curl -L -X POST \
+            -H "Authorization: token ${{ secrets.TEST_REPO_TOKEN }}" \
+            -H "Accept: application/vnd.github.v3+json" \
+            -H "Content-Type: application/json" \
+            https://api.github.com/repos/${{ secrets.TEST_REPO_OWNER }}/${{ secrets.TEST_REPO_NAME }}/actions/workflows/test.yml/dispatches \
+            -d '{"ref":"main","inputs":{"env":"production","build_id":"${{ github.run_id }}","build_url":"https://github.com/${{ github.repository }}/actions/runs/${{ github.run_id }}"}}'

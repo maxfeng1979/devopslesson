@@ -1,0 +1,31 @@
+services:
+  backend:
+    build: ./backend
+    ports:
+      - "8000:8000"
+    volumes:
+      - backend-data:/app
+    environment:
+      - PYTHONUNBUFFERED=1
+
+  frontend:
+    build: ./frontend
+    ports:
+      - "3000:3000"
+    depends_on:
+      - backend
+
+  nginx:
+    image: dtagdevsec/nginx:24.04.1
+    ports:
+      - "80:80"
+    volumes:
+      - ./nginx.conf:/etc/nginx/conf.d/default.conf:ro
+    command: >
+      sh -c "rm -f /etc/nginx/conf.d/lsweb.conf /etc/nginx/conf.d/tpotweb.conf && nginx -g 'daemon off;'"
+    depends_on:
+      - backend
+      - frontend
+
+volumes:
+  backend-data:
