@@ -4,11 +4,7 @@ pydantic==2.5.3
 python-jose[cryptography]==3.3.0
 passlib[bcrypt]==1.7.4
 python-multipart==0.0.6
-<<<<<<< HEAD
 aiosqlite==0.19.0
 pytest==8.0.0
 pytest-asyncio==0.23.0
 httpx==0.26.0
-=======
-aiosqlite==0.19.0
->>>>>>> 511b0731dc074bf40372a3b051ad801b17307c3e
