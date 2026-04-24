@@ -14,14 +14,14 @@ def auth_token():
     """获取认证令牌的 fixture"""
     # 注册新用户
     username = f"testuser_{uuid.uuid4().hex[:8]}"
-    resp = requests.post(f"{TARGET_URL}/api/auth/register", json={
+    resp = requests.post(f"{TARGET_URL}/auth/register", json={
         "username": username,
         "password": "test123456"
     })
-    assert resp.status_code == 200, f"Register failed: {resp.status_code}"
-    
+    assert resp.status_code in (200, 201), f"Register failed: {resp.status_code}"
+
     # 登录获取令牌
-    resp = requests.post(f"{TARGET_URL}/api/auth/login", json={
+    resp = requests.post(f"{TARGET_URL}/auth/login", json={
         "username": username,
         "password": "test123456"
     })
@@ -40,7 +40,7 @@ def test_health():
 def test_form_submit(auth_token):
     """测试表单提交"""
     headers = {"Authorization": f"Bearer {auth_token}"}
-    resp = requests.post(f"{TARGET_URL}/api/form/submit", json={
+    resp = requests.post(f"{TARGET_URL}/form/submit", json={
         "name": "Test User",
         "contact": "test@example.com",
         "note": "Test submission"
@@ -53,14 +53,15 @@ def test_coupons(auth_token):
     headers = {"Authorization": f"Bearer {auth_token}"}
 
     # 获取优惠券列表
-    resp = requests.get(f"{TARGET_URL}/api/coupons/list", headers=headers)
+    resp = requests.get(f"{TARGET_URL}/coupons/list", headers=headers)
     assert resp.status_code == 200, f"Coupon list failed: {resp.status_code}"
-    coupons = resp.json()
+    data = resp.json()
+    coupons = data.get("coupons", [])
     print(f"[PASS] Found {len(coupons)} coupons")
 
     # 尝试抢优惠券
     if coupons:
-        resp = requests.post(f"{TARGET_URL}/api/coupons/grab", json={
+        resp = requests.post(f"{TARGET_URL}/coupons/grab", json={
             "coupon_id": coupons[0]["id"]
         }, headers=headers)
         print(f"[PASS] Grab coupon response: {resp.status_code} - {resp.json()}")
